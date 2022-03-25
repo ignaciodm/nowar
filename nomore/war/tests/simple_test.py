@@ -1,6 +1,33 @@
+from typing import Type, Union
+
 import pytest
 
 
-@pytest.mark.parametrize("test_input,expected", [("3+5", 8), ("2+4", 6), ("6*9", 42)])
-def test_eval(test_input, expected):
-    assert eval(test_input) == expected
+from war.models import Knight, ArmyUnit, Archer, Catapult, Army
+
+
+@pytest.mark.parametrize(
+    "klass, expected_is_alive",
+    [
+        (Knight, True),
+        (Archer, True),
+        (Catapult, True),
+    ])
+def test_an_army_unit_alive_when_created(klass: Type[Union[Knight, Archer, Catapult]], expected_is_alive: bool):
+    army_unit = klass()
+
+    assert army_unit.is_alive == expected_is_alive
+
+
+@pytest.mark.parametrize(
+    "klass, expected_can_be_attacked",
+    [
+        (Knight, True),
+        (Archer, True),
+        (Catapult, True),
+        (Army, False),
+    ])
+def test_army_item_can_be_attacked(klass: Type[Union[Knight, Archer, Catapult, Army]], expected_can_be_attacked: bool):
+    army_item = klass()
+
+    assert army_item.can_be_attacked == expected_can_be_attacked
