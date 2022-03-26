@@ -1,10 +1,35 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 
 # Create your models here.
 from typing import Optional, Union, List
 
 
-class Army:
+class ArmyBase(ABC):
+
+    @property
+    def can_be_attacked(self) -> bool:
+        pass
+
+    @abstractmethod
+    def attacking_damage(self) -> float:
+        pass
+
+    @property
+    def is_alive(self) -> bool:
+        pass
+
+    def attack(self, target: 'ArmyUnit'):
+        if self.is_alive:
+            if target.can_be_attacked:
+                target.attacked_with(self.attacking_damage())
+            else:
+                raise RuntimeError('Army base cannot be attacked')
+
+        else:
+            raise RuntimeError('A dead army item cannot attack')
+
+
+class Army(ArmyBase):
     def __init__(self, troops: List[Union['Army', 'ArmyUnit']]) -> None:
         self._troops = troops
 
@@ -24,7 +49,7 @@ class Army:
         return any([troop.is_alive for troop in self._troops])
 
 
-class ArmyUnit(ABC):
+class ArmyUnit(ArmyBase, ABC):
     def __init__(self, life_amount: int, attacking_damage: int) -> None:
         self._life_amount = life_amount
         """
@@ -44,12 +69,6 @@ class ArmyUnit(ABC):
             :return: whether the army can be attacked_by or not.
         """
         return True
-
-    def attack(self, target: 'ArmyUnit'):
-        if self.is_alive:
-            target.attacked_with(self.attacking_damage())
-        else:
-            raise RuntimeError('A dead army unit cannot attack')
 
     def attacked_with(self, damage: float):
         self._life_amount = self._life_amount - damage

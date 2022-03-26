@@ -2,7 +2,7 @@ from typing import Type, Union, Optional, List
 
 import pytest
 
-from war.models import Knight, Archer, Catapult, Army, Weapon
+from war.models import Knight, Archer, Catapult, Army, Weapon, ArmyBuilder
 from war.tests.test_utils import make_dead_army_unit, make_army_unit
 
 
@@ -128,3 +128,8 @@ def test_army_total_attacking_damage(
 def test_army_unit_cannot_attack_if_dead():
     with pytest.raises(RuntimeError):
         make_dead_army_unit().attack(make_army_unit(Archer))
+
+
+def test_army_cannot_be_attacked():
+    with pytest.raises(RuntimeError):
+        Knight().attack(Army([]))
