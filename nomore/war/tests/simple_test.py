@@ -1,4 +1,4 @@
-from typing import Type, Union, Optional
+from typing import Type, Union, Optional, List
 
 import pytest
 
@@ -20,16 +20,15 @@ def test_an_army_unit_is_alive_when_created(klass: Type[Union[Knight, Archer, Ca
 
 
 @pytest.mark.parametrize(
-    "klass, expected_can_be_attacked",
+    "army_item, expected_can_be_attacked",
     [
-        (Knight, True),
-        (Archer, True),
-        (Catapult, True),
-        (Army, False),
+        (Knight(), True),
+        (Archer(), True),
+        (Catapult(), True),
+        (Army([]), False),
     ])
-def test_army_item_can_be_attacked(klass: Type[Union[Knight, Archer, Catapult, Army]], expected_can_be_attacked: bool):
-    army_item = klass()
-
+def test_army_item_can_be_attacked(
+        army_item: Union[Knight, Archer, Catapult, Army], expected_can_be_attacked: bool):
     assert army_item.can_be_attacked == expected_can_be_attacked
 
 
@@ -86,6 +85,44 @@ def test_army_unit_attack_army_unit(
     attacker.attack(target)
 
     assert target.is_dead == expected_target_is_dead
+
+
+@pytest.mark.parametrize(
+    "troops, expected_attacking_damage",
+    [
+        #
+        # Armies of mixed army units of 2
+        #
+        ([Knight(), Knight()], 40),
+        ([Knight(Weapon(10)), Knight()], 50),
+        ([Knight(Weapon(10)), Archer()], 55),
+        ([Knight(Weapon(10)), Catapult()], 80),
+
+        #
+        # Army of with dead units does not sum to attacking power
+        #
+        ([Knight(), Knight(), make_dead_army_unit()], 40),
+        ([Knight(Weapon(10)), Knight(), make_dead_army_unit()], 50),
+        ([Knight(Weapon(10)), Archer(), make_dead_army_unit()], 55),
+        ([Knight(Weapon(10)), Catapult(), make_dead_army_unit()], 80),
+
+        #
+        # A nested army
+        #
+        (
+                [Knight(), Archer(), Catapult(), Army([Knight(), Archer()])],
+                20 + 25 + 50 + 20 + 25
+        ),
+        (
+                [Knight(), Archer(), Catapult(), Army([Knight(), Archer(), Army([Knight(), Archer()])])],
+                20 + 25 + 50 + 20 + 25 + 20 + 25
+        ),
+    ])
+def test_army_total_attacking_damage(
+        troops: List[Union[Knight, Archer, Catapult]], expected_attacking_damage: float):
+    army = ArmyBuilder().with_troops(troops).build()
+
+    assert army.attacking_damage() == expected_attacking_damage
 
 
 def test_army_unit_cannot_attack_if_dead():

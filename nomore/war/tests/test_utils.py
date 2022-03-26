@@ -15,7 +15,7 @@ class TestArmyUnit(ArmyUnit):
 
 
 def make_dead_army_unit() -> ArmyUnit:
-    return TestArmyUnit(-10, 0)
+    return TestArmyUnit(-10, 10)
 
 
 def make_army_unit(attacker_class, weapon=None):

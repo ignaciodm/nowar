@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 
 # Create your models here.
-from typing import Optional
+from typing import Optional, Union, List
 
 
 class Army:
-    pass
+    def __init__(self, troops: List[Union['Army', 'ArmyUnit']]) -> None:
+        self._troops = troops
 
     @property
     def can_be_attacked(self) -> bool:
@@ -14,6 +15,13 @@ class Army:
             :return: whether the army can be attacked_by or not.
         """
         return False
+
+    def attacking_damage(self) -> float:
+        return sum([troop.attacking_damage() if troop.is_alive else 0 for troop in self._troops])
+
+    @property
+    def is_alive(self) -> bool:
+        return any([troop.is_alive for troop in self._troops])
 
 
 class ArmyUnit(ABC):
@@ -113,3 +121,22 @@ class Weapon:
     @property
     def attacking_damage(self) -> float:
         return self._attacking_damage
+
+
+class ArmyBuilder:
+    """
+        A place to abstract how to build armies. Too much for the current use case, but as the complexity of the
+        army creation changes, it could be useful.
+    """
+
+    def __init__(self):
+        self._troops = []
+
+    def with_troops(self, troops: List) -> 'ArmyBuilder':
+        for troop in troops:
+            self._troops.append(troop)
+
+        return self
+
+    def build(self) -> Army:
+        return Army(self._troops)
