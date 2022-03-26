@@ -37,8 +37,14 @@ class ArmyUnit(ABC):
         """
         return True
 
-    def attacked_by(self, attacker: 'ArmyUnit'):
-        self._life_amount = self._life_amount - attacker.attacking_damage()
+    def attack(self, target: 'ArmyUnit'):
+        if self.is_alive:
+            target.attacked_with(self.attacking_damage())
+        else:
+            raise RuntimeError('A dead army unit cannot attack')
+
+    def attacked_with(self, damage: float):
+        self._life_amount = self._life_amount - damage
 
     @property
     def is_dead(self) -> bool:
@@ -55,7 +61,7 @@ class ArmyUnit(ABC):
 
 class Catapult(ArmyUnit):
     _LIFE = 200
-    _ATTACKING_DAMAGE = 100
+    _ATTACKING_DAMAGE = 50
 
     def __init__(self):
         super().__init__(Catapult._LIFE, Catapult._ATTACKING_DAMAGE)

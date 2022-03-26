@@ -3,6 +3,7 @@ from typing import Type, Union, Optional
 import pytest
 
 from war.models import Knight, Archer, Catapult, Army, Weapon
+from war.tests.test_utils import make_dead_army_unit, make_army_unit
 
 
 @pytest.mark.parametrize(
@@ -16,8 +17,6 @@ def test_an_army_unit_is_alive_when_created(klass: Type[Union[Knight, Archer, Ca
     army_unit = klass()
 
     assert army_unit.is_alive == expected_is_alive
-
-
 
 
 @pytest.mark.parametrize(
@@ -81,16 +80,14 @@ def test_army_unit_attack_army_unit(
         weapon: Optional[Weapon],
         target_class: Type[Union[Knight, Archer, Catapult, Army]],
         expected_target_is_dead: bool):
-    attacker = _make_army_unit(attacker_class, weapon)
-    target = _make_army_unit(target_class)
+    attacker = make_army_unit(attacker_class, weapon)
+    target = make_army_unit(target_class)
 
-    target.attacked_by(attacker)
+    attacker.attack(target)
 
     assert target.is_dead == expected_target_is_dead
 
 
-def _make_army_unit(attacker_class, weapon = None):
-    if weapon:
-        return attacker_class(weapon)
-    else:
-        return attacker_class()
+def test_army_unit_cannot_attack_if_dead():
+    with pytest.raises(RuntimeError):
+        make_dead_army_unit().attack(make_army_unit(Archer))
